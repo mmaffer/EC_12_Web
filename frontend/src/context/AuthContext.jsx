@@ -28,15 +28,30 @@ export const AuthProvider = ({ children }) => {
     const form = new URLSearchParams()
     form.append('username', username)
     form.append('password', password)
-    const response = await api.post('/login', form, {
+
+    const response = await fetch('/login', {
+      method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      validateStatus: () => true,
+      body: form,
+      credentials: 'include',
+      redirect: 'manual',
     })
+
+    if (response.status === 302) {
+      const location = response.headers.get('Location') ?? ''
+      if (location.includes('error')) {
+        return false
+      }
+      await fetchUser()
+      return true
+    }
+
     if (response.status >= 400) {
       return false
     }
-    const profile = await fetchUser()
-    return Boolean(profile)
+
+    await fetchUser()
+    return true
   }
 
   const logout = async () => {
