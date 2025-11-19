@@ -24,15 +24,14 @@ const LoginPage = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault()
-    setError(null)
     setLoading(true)
-    try {
-      await login(form.username, form.password)
+    setError(null)
+    const success = await login(form.username, form.password)
+    setLoading(false)
+    if (success) {
       navigate(from, { replace: true })
-    } catch {
+    } else {
       setError('Credenciales inválidas o usuario inactivo.')
-    } finally {
-      setLoading(false)
     }
   }
 

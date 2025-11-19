@@ -11,8 +11,10 @@ export const AuthProvider = ({ children }) => {
     try {
       const { data } = await api.get('/api/auth/me')
       setUser(data)
+      return data
     } catch {
       setUser(null)
+      return null
     } finally {
       setLoading(false)
     }
@@ -26,10 +28,15 @@ export const AuthProvider = ({ children }) => {
     const form = new URLSearchParams()
     form.append('username', username)
     form.append('password', password)
-    await api.post('/login', form, {
+    const response = await api.post('/login', form, {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      validateStatus: () => true,
     })
-    await fetchUser()
+    if (response.status >= 400) {
+      return false
+    }
+    const profile = await fetchUser()
+    return Boolean(profile)
   }
 
   const logout = async () => {
